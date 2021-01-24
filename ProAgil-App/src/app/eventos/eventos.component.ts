@@ -3,8 +3,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 import { Evento } from '../_models/Evento';
 import { EventoService } from '../_services/evento.service';
-//Imports para o datepicker do ngx
+// Imports para o datepicker do ngx
 import { defineLocale, BsLocaleService, ptBrLocale } from 'ngx-bootstrap';
+import { ToastrService } from 'ngx-toastr';
 
 defineLocale('pt-br', ptBrLocale);
 
@@ -14,6 +15,8 @@ defineLocale('pt-br', ptBrLocale);
   styleUrls: ['./eventos.component.css']
 })
 export class EventosComponent implements OnInit {
+
+  titulo = 'Eventos';
 
   eventosFiltrados: Evento[] = [];
   eventos: Evento[] = [];
@@ -25,13 +28,14 @@ export class EventosComponent implements OnInit {
   modoSalvar = 'post';
   bodyDeletarEvento = '';
 
-  _filtroLista = "";
+  _filtroLista = '';
 
   constructor(
     private eventoService: EventoService,
     private modalService: BsModalService,
     private fb: FormBuilder,
-    private localeService: BsLocaleService
+    private localeService: BsLocaleService,
+    private toastr: ToastrService
   ) {
     this.localeService.use('pt-br');
   }
@@ -69,7 +73,9 @@ export class EventosComponent implements OnInit {
       () => {
         template.hide();
         this.getEventos();
+        this.toastr.success('Deletado com sucesso!');
       }, error => {
+        this.toastr.error('Erro ao tentar deletar!');
         console.log(error);
       }
     );
@@ -80,7 +86,7 @@ export class EventosComponent implements OnInit {
     template.show();
   }
 
-  //Será executado antes do html ficar pronto
+  // Será executado antes do html ficar pronto
   ngOnInit() {
     this.validation();
     this.getEventos();
@@ -112,26 +118,29 @@ export class EventosComponent implements OnInit {
   salvarAlteracao(template: any) {
     if (this.registerForm.valid) {
       if (this.modoSalvar === 'post') {
-        //Copiando o objeto
+        // Copiando o objeto
         this.evento = Object.assign({}, this.registerForm.value);
         this.eventoService.postEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
             template.hide();
             this.getEventos();
+            this.toastr.success('Inserido com sucesso!');
           }, error => {
+            this.toastr.error('Erro ao tentar inserir!');
             console.log(error);
           }
         );
-      }
-      else {
-        //Copiando o objeto
-        //Neste caso utilizo o id: this.evento.id pq no this.registerForm.value não tem esse valor (na edição não aparece o id)
+      } else {
+        // Copiando o objeto
+        // Neste caso utilizo o id: this.evento.id pq no this.registerForm.value não tem esse valor (na edição não aparece o id)
         this.evento = Object.assign({id: this.evento.id}, this.registerForm.value);
         this.eventoService.putEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
             template.hide();
             this.getEventos();
+            this.toastr.success('Atualizado com sucesso!');
           }, error => {
+            this.toastr.error('Erro ao tentar atualizar!');
             console.log(error);
           }
         );
@@ -145,7 +154,7 @@ export class EventosComponent implements OnInit {
       this.eventos = _eventos;
       this.eventosFiltrados = _eventos;
     }, error => {
-      console.log(error);
+      this.toastr.error(`Erro ao tentar carregar os eventos: ${error}`);
     });
   }
 
