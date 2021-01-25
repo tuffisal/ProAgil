@@ -27,8 +27,12 @@ export class EventosComponent implements OnInit {
   registerForm: FormGroup;
   modoSalvar = 'post';
   bodyDeletarEvento = '';
+  dataAtual: string;
+
+  file: File;
 
   _filtroLista = '';
+  fileNameToUpdate: string;
 
   constructor(
     private eventoService: EventoService,
@@ -53,8 +57,13 @@ export class EventosComponent implements OnInit {
   editarEvento(evento: Evento, template: any) {
     this.modoSalvar = 'put';
     this.openModal(template);
-    this.evento = evento;
-    this.registerForm.patchValue(evento);
+    // Passo a limpar a cópia do objeto passado como parâmetro
+    // Isso evita alterações no grid antes de gravar as informações do modal de edição
+    // Neste caso, a imagem
+    this.evento = Object.assign({}, evento);
+    this.fileNameToUpdate = evento.imagemURL.toString();
+    this.evento.imagemURL = '';
+    this.registerForm.patchValue(this.evento);
   }
 
   novoEvento(template: any) {
@@ -115,11 +124,40 @@ export class EventosComponent implements OnInit {
     });
   }
 
+  uploadImagem() {
+    if (this.modoSalvar === 'post') {
+        const nomeArquivo = this.evento.imagemURL.split('\\', 3);
+        this.evento.imagemURL = nomeArquivo[2];
+        this.eventoService.postUpload(this.file, nomeArquivo[2]).subscribe(
+          () => {
+            // Esse dataAtual é uma gambiarra (foi adicionar na URL da imagem no html também)
+            // utilizada para "enganar" o browser, informando que a página foi alterada (evita que ele busque do cache)
+            // Isso precisou ser feito porque o nome da imagem é mantido. Logo, o nome da imagem é o mesmo mas o conteúdo
+            // dela é diferente.
+            this.dataAtual = new Date().getMilliseconds().toString();
+            this.getEventos();
+          }
+        );
+    } else {
+        this.evento.imagemURL = this.fileNameToUpdate;
+        this.eventoService.postUpload(this.file, this.fileNameToUpdate).subscribe(
+          () => {
+            this.dataAtual = new Date().getMilliseconds().toString();
+            console.log(this.dataAtual);
+            this.getEventos();
+          }
+        );
+    }
+}
+
   salvarAlteracao(template: any) {
     if (this.registerForm.valid) {
       if (this.modoSalvar === 'post') {
         // Copiando o objeto
         this.evento = Object.assign({}, this.registerForm.value);
+
+        this.uploadImagem();
+
         this.eventoService.postEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
             template.hide();
@@ -134,6 +172,9 @@ export class EventosComponent implements OnInit {
         // Copiando o objeto
         // Neste caso utilizo o id: this.evento.id pq no this.registerForm.value não tem esse valor (na edição não aparece o id)
         this.evento = Object.assign({id: this.evento.id}, this.registerForm.value);
+
+        this.uploadImagem();
+
         this.eventoService.putEvento(this.evento).subscribe(
           (novoEvento: Evento) => {
             template.hide();
@@ -145,6 +186,14 @@ export class EventosComponent implements OnInit {
           }
         );
       }
+    }
+  }
+
+  onFileChange(event) {
+    const reader = new FileReader();
+
+    if (event.target.files && event.target.files.length) {
+      this.file = event.target.files;
     }
   }
 
