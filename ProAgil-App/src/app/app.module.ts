@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule, BsDropdownModule, ModalModule, BsDatepickerModule } from 'ngx-bootstrap';
 import { AppRoutingModule } from './app-routing.module';
@@ -14,10 +14,14 @@ import { PalestrantesComponent } from './palestrantes/palestrantes.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ContatosComponent } from './contatos/contatos.component';
 import { TituloComponent } from './_shared/titulo/titulo.component';
+import { LoginComponent } from './user/login/login.component';
+import { RegistrationComponent } from './user/registration/registration.component';
+import { UserComponent } from './user/user.component';
 
 import { DateTimeFormatPipePipe } from './_helps/DateTimeFormatPipe.pipe';
 
 import { EventoService } from './_services/evento.service';
+import { AuthInterceptor } from './auth/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -29,6 +33,9 @@ import { EventoService } from './_services/evento.service';
     ContatosComponent,
     TituloComponent,
     DateTimeFormatPipePipe,
+    UserComponent,
+    LoginComponent,
+    RegistrationComponent
    ],
   imports: [
     BrowserModule,
@@ -47,7 +54,12 @@ import { EventoService } from './_services/evento.service';
     TooltipModule.forRoot(),
     ModalModule.forRoot()
     ],
-  providers: [EventoService],
+  providers: [EventoService,
+              {
+                provide: HTTP_INTERCEPTORS,
+                useClass: AuthInterceptor,
+                multi: true // Só vai funcionar múltiplas requisições devido ao uso do tap na classe do interceptor
+              }],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
