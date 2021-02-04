@@ -69,7 +69,10 @@
           <button class="btn btn-sm btn-danger" tooltip="Excluir" (click)="excluirEvento(evento,confirm)">
             <i class="fa fa-eraser"></i>
           </button>
-        </div>
+          <a [routerLink]="['/evento', evento.id, 'edit']" tooltip="Edição detalhada" class="btn btn-sm btn-warning">
+            <i class="fa fa-edit"></i>
+          </a>
+          </div>
       </td>
     </tr>
   </tbody>

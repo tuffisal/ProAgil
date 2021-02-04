@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,11 @@ namespace ProAgil.Repository
         public void Delete<T>(T entity) where T : class
         {
             this._context.Remove(entity);
+        }
+
+        public void DeleteRange<T>(T[] entities) where T : class
+        {
+            this._context.RemoveRange(entities);
         }
 
         public void Update<T>(T entity) where T : class
