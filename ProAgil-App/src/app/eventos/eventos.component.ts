@@ -20,7 +20,7 @@ export class EventosComponent implements OnInit {
 
   eventosFiltrados: Evento[] = [];
   eventos: Evento[] = [];
-  evento: Evento;
+  evento: Evento = new Evento();
   imagemLargura = 50;
   imagemMargem = 2;
   mostrarImagem = false;

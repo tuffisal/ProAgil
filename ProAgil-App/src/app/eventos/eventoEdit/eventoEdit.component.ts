@@ -17,7 +17,7 @@ export class EventoEditComponent implements OnInit {
   evento: Evento = new Evento(); // para isso funcionar foi preciso transformar a interface Evento em classe (arquivo evento.ts em _models)
   imagemURL = 'assets/img/upload.png';
   registerForm: FormGroup;
-  file: File; // não sei pra que server essa propriedade
+  file: any;
   fileNameToUpdate: string;
   dataAtual: any;
 
@@ -50,6 +50,7 @@ export class EventoEditComponent implements OnInit {
       (evento: Evento) => {
         this.evento = Object.assign({}, evento);
         this.fileNameToUpdate = evento.imagemURL.toString();
+        this.dataAtual = new Date().getMilliseconds().toString();
         this.imagemURL = `http://localhost:5000/resources/images/${this.evento.imagemURL}?_ts=${this.dataAtual}`;
         this.evento.imagemURL = '';
         this.registerForm.patchValue(this.evento);
@@ -115,12 +116,12 @@ export class EventoEditComponent implements OnInit {
     this.redesSociais.removeAt(id);
   }
 
-  onFileChange(file: FileList) {
+  onFileChange(files: FileList) {
     const reader = new FileReader();
     reader.onload = (event: any) => this.imagemURL = event.target.result;
-    this.file = event.target.files;
-
-    reader.readAsDataURL(file[0]);
+    // this.file = event.target.files;
+    this.file = files;
+    reader.readAsDataURL(files[0]);
   }
 
   uploadImagem() {
